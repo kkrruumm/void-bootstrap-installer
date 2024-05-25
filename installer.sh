@@ -105,7 +105,7 @@ if [ "$sshPrompt" == "Y" ] || [ "$sshPrompt" == "y" ]; then
 Would you like to enable root SSH login? (y/n)
 __EOF__
 
-read rootSSHPrompt
+    read rootSSHPrompt
 
 fi
 
