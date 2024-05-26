@@ -26,6 +26,7 @@ The currently supported features of this installer include:
 
 -Option to enable SSH
 --Option to allow SSH access from the root user
+--Option to provide a public SSH key
 
 -Basic user creation and configuration
 -Option to change the system hostname
