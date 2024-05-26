@@ -105,8 +105,23 @@ if [ "$sshPrompt" == "Y" ] || [ "$sshPrompt" == "y" ]; then
 Would you like to enable root SSH login? (y/n)
 __EOF__
 
-    read rootSSHPrompt
+read rootSSHPrompt
 
+    cat <<__EOF__
+
+Would you like to provide a public SSH key to log in with instead of using a password? (y/n)
+__EOF__
+
+read provideSSHKeyPrompt
+
+    if [ "$provideSSHKeyPrompt" == "Y" ] || [ "$provideSSHKeyPrompt" == "y" ]; then
+        cat <<__EOF__
+
+Please paste in the contents of your PUBLIC ssh key (.pub file):
+__EOF__
+        
+        read providedSSHKey
+    fi
 fi
 
 cat <<__EOF__
@@ -129,8 +144,10 @@ Swap size: $swapSize
 SU choice: $suTool
 Timezone: $timezonePrompt
 Create user: $createUser
+Superuser for created user: $superUserPrompt
 Enable SSH: $sshPrompt
 Enable root SSH: $rootSSHPrompt
+Provided SSH key?: $provideSSHKeyPrompt
 Hostname: $hostnameInput
 
 If all looks good, you may enter 'install' to proceed.
@@ -258,8 +275,24 @@ if [ "$confirmationPrompt" == "install" ]; then
     if [ "$sshPrompt" == "Y" ] || [ "$sshPrompt" == "y" ]; then
         chroot /mnt /bin/bash -c "xbps-install -Suy openssh && ln -s /etc/sv/sshd /etc/runit/runsvdir/default" || failure
 
-        if [ "$rootSSHPrompt" == "Y" ] || [ "$rootSSHPrompt" == "y" ]; then
-            chroot /mnt /bin/bash -c "sed -i -e 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config" || failure
+        if [ "$provideSSHKeyPrompt" != "Y" ] && [ "$provideSSHKeyPrompt" != "y" ]; then
+            if [ "$rootSSHPrompt" == "Y" ] || [ "$rootSSHPrompt" == "y" ]; then
+                chroot /mnt /bin/bash -c "sed -i -e 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config" || failure
+            fi
+        elif [ "$provideSSHKeyPrompt" == "Y" ] || [ "$provideSSHKeyPrompt" == "y" ]; then
+            if [ "$rootSSHPrompt" == "Y" ] || [ "$rootSSHPrompt" == "y" ]; then
+                mkdir /mnt/root/.ssh || failure
+                touch /mnt/root/.ssh/authorized_keys || failure
+
+                echo "$providedSSHKey" > /mnt/root/.ssh/authorized_keys || failure
+            fi
+
+            if [ "$createUser" != "skip" ]; then
+                mkdir /mnt/home/"$createUser"/.ssh || failure
+                touch /mnt/home/"$createUser"/.ssh/authorized_keys || failure
+
+                echo "$providedSSHKey" > /mnt/home/"$createUser"/.ssh/authorized_keys || failure
+            fi
         fi
     fi
 
