@@ -282,13 +282,21 @@ if [ "$confirmationPrompt" == "install" ]; then
         if [ "$provideSSHKeyPrompt" != "Y" ] && [ "$provideSSHKeyPrompt" != "y" ]; then
             if [ "$rootSSHPrompt" == "Y" ] || [ "$rootSSHPrompt" == "y" ]; then
                 chroot /mnt /bin/bash -c "sed -i -e 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config" || failure
+            else
+                chroot /mnt /bin/bash -c "sed -i -e 's/#PermitRootLogin prohibit-password/PermitRootLogin no/g' /etc/ssh/sshd_config" || failure
             fi
         elif [ "$provideSSHKeyPrompt" == "Y" ] || [ "$provideSSHKeyPrompt" == "y" ]; then
+            chroot /mnt /bin/bash -c "sed -i -e 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/g' /etc/ssh/sshd_config" || failure
+            chroot /mnt /bin/bash -c "sed -i -e 's/#PermitEmptyPasswords no/PermitEmptyPasswords no/g' /etc/ssh/sshd_config" || failure
+            chroot /mnt /bin/bash -c "sed -i -e 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config" || failure
+
             if [ "$rootSSHPrompt" == "Y" ] || [ "$rootSSHPrompt" == "y" ]; then
                 mkdir /mnt/root/.ssh || failure
                 touch /mnt/root/.ssh/authorized_keys || failure
 
                 echo "$providedSSHKey" > /mnt/root/.ssh/authorized_keys || failure
+            else
+                chroot /mnt /bin/bash -c "sed -i -e 's/#PermitRootLogin prohibit-password/PermitRootLogin no/g' /etc/ssh/sshd_config" || failure
             fi
 
             if [ "$createUser" != "skip" ]; then
