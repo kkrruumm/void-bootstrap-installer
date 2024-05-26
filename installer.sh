@@ -105,7 +105,7 @@ if [ "$sshPrompt" == "Y" ] || [ "$sshPrompt" == "y" ]; then
 Would you like to enable root SSH login? (y/n)
 __EOF__
 
-read rootSSHPrompt
+    read rootSSHPrompt
 
     cat <<__EOF__
 
@@ -261,6 +261,10 @@ if [ "$confirmationPrompt" == "install" ]; then
         chroot /mnt /bin/bash -c "chown -c root:root /etc/doas.conf" || failure
         chroot /mnt /bin/bash -c "chmod -c 0400 /etc/doas.conf" || failure
         chroot /mnt /bin/bash -c "ln -s $(which doas) /usr/bin/sudo" || failure
+    fi
+
+    if [ "$swapPrompt" == "Y" ] || [ "$swapPrompt" == "y" ]; then
+        echo "/dev/void/swap  swap  swap    defaults              0       0" >> /mnt/etc/fstab || failure
     fi
 
     if [ "$superUserPrompt" == "Y" ] || [ "$superUserPrompt" == "y" ]; then
