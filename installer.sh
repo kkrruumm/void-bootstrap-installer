@@ -230,7 +230,7 @@ if [ "$confirmationPrompt" == "install" ]; then
     fi
 
     # Install GRUB
-    chroot /mnt /bin/bash -c "grub-install $targetDisk" || failure
+    chroot /mnt /bin/bash -c "grub-install --efi-directory=/boot/efi" || failure
 
     # Reconfigure packages
     chroot /mnt /bin/bash -c "xbps-reconfigure -fa" || failure
