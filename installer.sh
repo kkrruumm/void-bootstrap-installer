@@ -218,6 +218,10 @@ if [ "$confirmationPrompt" == "install" ]; then
     # Update system and install base packages
     chroot /mnt /bin/bash -c "xbps-install -Suy xbps base-system lvm2 linux" || failure
 
+    # Add ESP to fstab
+    partVar=$(blkid -o value -s UUID "$targetDisk"1)
+    echo "UUID=$partVar     /boot/efi   vfat    defaults    0   0" >> /mnt/etc/fstab || failure
+
     # Install GRUB for target architecture
     if [ "$(uname -m)" == "x86_64" ]; then
         chroot /mnt /bin/bash -c "xbps-install -Suy grub-x86_64-efi" || failure
