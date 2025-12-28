@@ -225,7 +225,11 @@ if [ "$confirmationPrompt" == "install" ]; then
     # Install GRUB for target architecture
     if [ "$(uname -m)" == "x86_64" ]; then
         chroot /mnt /bin/bash -c "xbps-install -Suy grub-x86_64-efi" || failure
-        chroot /mnt /bin/bash -c "grub-install --target=x86_64-efi --efi-directory=/boot/efi" || failure
+        if [ -e /sys/firmware/efi ]; then
+            chroot /mnt /bin/bash -c "grub-install --target=x86_64-efi --efi-directory=/boot/efi" || failure
+        else
+            chroot /mnt /bin/bash -c "grub-install --efi-directory=/boot/efi"
+        fi
     elif [ "$(uname -m)" == "aarch64" ]; then
         chroot /mnt /bin/bash -c "xbps-install -Suy grub-arm64-efi" || failure
         chroot /mnt /bin/bash -c "grub-install --efi-directory=/boot/efi" || failure
